@@ -196,6 +196,7 @@ def main():
         send_webhook(message)
     else:
         print("No significant change in leaderboard detected. Skipping webhook.")
+
     save_new_leaderboard(new_leaderboard)
 
 
