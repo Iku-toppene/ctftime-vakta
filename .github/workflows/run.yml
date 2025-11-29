@@ -1,0 +1,38 @@
+name: CTFtime Vakta
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  check_rank:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer requests
+        run: pip install -r requirements.txt
+
+      - name: Sjekk ledertavla
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: python main.py
+
+      - name: Oppdater data
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add leaderboard.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Oppdater data"
+            git push
+          else
+            echo "Ingen endringer"
+          fi
