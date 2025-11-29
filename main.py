@@ -9,13 +9,13 @@ from pathlib import Path
 import requests
 
 parser = argparse.ArgumentParser(
-    description="Monitor the CTFTime leaderboard for changes in a team's national ranking"
+    description="Monitor the CTFtime leaderboard for changes in a team's national ranking"
 )
 parser.add_argument(
     "--team",
     type=int,
     default=109611,
-    help="CTFTime Team ID to track (default: 109611)",
+    help="CTFtime Team ID to track (default: 109611)",
 )
 parser.add_argument(
     "--country",
@@ -174,7 +174,7 @@ def send_webhook(message):
             timeout=30,
             json={
                 "masquerade": {
-                    "name": "CTFTime-Vakta",
+                    "name": "CTFtime-vakta",
                     "avatar": "https://ctftime.org/static/images/ctftime-logo-avatar.png",
                 },
                 "content": message,
