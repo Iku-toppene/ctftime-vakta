@@ -14,7 +14,7 @@ Monitor a CTFtime team's national leaderboard position and get notified when the
 
 - Tracks a team's national rank on CTFtime
 - Detects rank changes and sends notifications via webhook
-- Stores previous leaderboard positions in `leaderboard.json` for comparison
+- Stores leaderboard positions in `leaderboard.json`
 
 ## Usage
 
