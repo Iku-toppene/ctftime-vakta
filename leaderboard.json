@@ -13,7 +13,7 @@
     "team_id": 222749,
     "points": 293.80579053412646,
     "team_country": "NO",
-    "place": 137,
+    "place": 139,
     "team_name": "Norske N\u00f8kkelsnikere",
     "events": 10
   },
@@ -22,25 +22,25 @@
     "team_id": 91377,
     "points": 249.66854593296816,
     "team_country": "NO",
-    "place": 173,
+    "place": 181,
     "team_name": "poiko",
     "events": 18
   },
   {
     "country_place": 4,
     "team_id": 364061,
-    "points": 235.46799090576516,
+    "points": 236.91519420855667,
     "team_country": "NO",
-    "place": 199,
+    "place": 207,
     "team_name": "Ekho",
-    "events": 31
+    "events": 32
   },
   {
     "country_place": 5,
     "team_id": 119480,
     "points": 196.9247246118191,
     "team_country": "NO",
-    "place": 253,
+    "place": 260,
     "team_name": "EPT",
     "events": 6
   },
@@ -49,7 +49,7 @@
     "team_id": 225509,
     "points": 184.81363642406552,
     "team_country": "NO",
-    "place": 278,
+    "place": 286,
     "team_name": "Cyberlandslaget",
     "events": 4
   },
@@ -58,7 +58,7 @@
     "team_id": 193761,
     "points": 107.54,
     "team_country": "NO",
-    "place": 522,
+    "place": 533,
     "team_name": "dugnad",
     "events": 1
   },
@@ -67,7 +67,7 @@
     "team_id": 11404,
     "points": 107.49929309296745,
     "team_country": "NO",
-    "place": 524,
+    "place": 535,
     "team_name": "Itemize",
     "events": 14
   },
@@ -76,16 +76,16 @@
     "team_id": 144114,
     "points": 106.27523994964363,
     "team_country": "NO",
-    "place": 529,
+    "place": 541,
     "team_name": "coldboots",
     "events": 7
   },
   {
     "country_place": 10,
     "team_id": 182472,
-    "points": 105.01879528397613,
+    "points": 105.01944921964635,
     "team_country": "NO",
-    "place": 537,
+    "place": 549,
     "team_name": "RumbleInTheJungle",
     "events": 7
   },
@@ -94,7 +94,7 @@
     "team_id": 113107,
     "points": 73.23782301932158,
     "team_country": "NO",
-    "place": 761,
+    "place": 772,
     "team_name": "Corax",
     "events": 8
   },
@@ -103,7 +103,7 @@
     "team_id": 85873,
     "points": 57.578064709736154,
     "team_country": "NO",
-    "place": 973,
+    "place": 985,
     "team_name": "unblvr",
     "events": 5
   }
