@@ -5,7 +5,9 @@ Monitor a CTFtime team's national leaderboard position and get notified when the
 </p>
 
 <p align="center">
-  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/Iku-toppene/ctftime-vakta/run.yml?style=for-the-badge&logo=happycow&logoColor=white&label=Iku-toppene%20tracker">
+    <a href="https://github.com/Iku-toppene/ctftime-vakta/actions/workflows/run.yml">
+        <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/Iku-toppene/ctftime-vakta/run.yml?style=for-the-badge&logo=happycow&logoColor=white&label=Iku-toppene%20tracker">
+    </a>
 </p>
 
 ---
