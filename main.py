@@ -50,7 +50,14 @@ def fetch_leaderboard():
     try:
         response = requests.get(API_URL, timeout=30)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+
+        for team in data:
+            team.pop("team_country", None)
+            team.pop("place", None)
+
+        return data
+
     except requests.exceptions.RequestException as e:
         print(f"Failed to fetch leaderboard (Request Error): {e}", file=sys.stderr)
         sys.exit(1)
