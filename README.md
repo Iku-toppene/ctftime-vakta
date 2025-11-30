@@ -1,7 +1,7 @@
 <h1 align="center">CTFtime-vakta</h1>
 
 <p align="center">
-Monitor a CTFtime team's national leaderboard position and get notified when the rank changes.
+Monitor a CTFtime team's national leaderboard position and get notified when the rank changes
 </p>
 
 <p align="center">
