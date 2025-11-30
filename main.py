@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import argparse
 import json
 import os
@@ -8,29 +9,27 @@ from pathlib import Path
 
 import requests
 
+TEAM_INFO_URL_TEMPLATE = "https://ctftime.org/api/v1/teams/{team_id}/"
+LEADERBOARD_URL_TEMPLATE = "https://ctftime.org/api/v1/top-by-country/{country}/"
+TEAM_PAGE_URL_TEMPLATE = "https://ctftime.org/team/{team_id}"
+
+LEADERBOARD_FILE = Path("leaderboard.json")
+
 parser = argparse.ArgumentParser(
-    description="Monitor the CTFtime leaderboard for changes in a team's national ranking"
+    description="Monitor CTFtime leaderboard for changes in a team's national ranking"
 )
+
 parser.add_argument(
     "--team",
     type=int,
     default=109611,
     help="CTFtime Team ID to track (default: 109611)",
 )
-parser.add_argument(
-    "--country",
-    type=str,
-    default="no",
-    help="Country code for leaderboard (default: no)",
-)
+
 args = parser.parse_args()
-
 TEAM_ID = args.team
-COUNTRY_CODE = args.country
-API_URL = f"https://ctftime.org/api/v1/top-by-country/{COUNTRY_CODE}/"
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
-LEADERBOARD_FILE = Path("leaderboard.json")
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 USE_LINKS = True
 INCLUDE_POINTS = False
@@ -38,17 +37,34 @@ INCLUDE_POINTS = False
 if not WEBHOOK_URL:
     print("WEBHOOK_URL environment variable not set", file=sys.stderr)
     sys.exit(1)
-elif not WEBHOOK_URL.startswith("https://stoat.chat/api/webhooks/"):
+
+if not WEBHOOK_URL.startswith("https://stoat.chat/api/webhooks/"):
     print(
-        f"WEBHOOK_URL does not appear to be a Stoat webhook URL. Found: {WEBHOOK_URL}",
+        f"WEBHOOK_URL does not look like a Stoat webhook URL. Found: {WEBHOOK_URL}",
         file=sys.stderr,
     )
     sys.exit(1)
 
 
-def fetch_leaderboard():
+def fetch_team_info(team_id: int):
+    url = TEAM_INFO_URL_TEMPLATE.format(team_id=team_id)
+
     try:
-        response = requests.get(API_URL, timeout=30)
+        response = requests.get(url, timeout=30)
+        if response.status_code == 404:
+            print(f"Team with ID {TEAM_ID} not found", file=sys.stderr)
+            sys.exit(1)
+        response.raise_for_status()
+        return response.json()
+
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to fetch team info: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def fetch_leaderboard(api_url: str):
+    try:
+        response = requests.get(api_url, timeout=30)
         response.raise_for_status()
         data = response.json()
 
@@ -59,8 +75,9 @@ def fetch_leaderboard():
         return data
 
     except requests.exceptions.RequestException as e:
-        print(f"Failed to fetch leaderboard (Request Error): {e}", file=sys.stderr)
+        print(f"Failed to fetch leaderboard: {e}", file=sys.stderr)
         sys.exit(1)
+
     except json.JSONDecodeError as e:
         print(f"Failed to decode leaderboard JSON: {e}", file=sys.stderr)
         sys.exit(1)
@@ -72,7 +89,7 @@ def load_old_leaderboard():
     try:
         return json.loads(LEADERBOARD_FILE.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, IOError) as e:
-        print(f"Could not load/decode old leaderboard file: {e}", file=sys.stderr)
+        print(f"Could not load old leaderboard file: {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -80,11 +97,11 @@ def save_new_leaderboard(leaderboard):
     try:
         LEADERBOARD_FILE.write_text(json.dumps(leaderboard, indent=2), encoding="utf-8")
     except IOError as e:
-        print(f"Failed to save new leaderboard file: {e}", file=sys.stderr)
+        print(f"Failed to save leaderboard: {e}", file=sys.stderr)
         sys.exit(1)
 
 
-def escape_markdown(text):
+def escape_markdown(text: str):
     return re.sub(r"([\\`*_{}\[\]()#+\-.!])", r"\\\1", text)
 
 
@@ -95,7 +112,7 @@ def format_team_name(team, use_link=True, include_points=False):
         name += f" ({team['points']:.2f} p)"
 
     if use_link:
-        url = f"https://ctftime.org/team/{team['team_id']}"
+        url = TEAM_PAGE_URL_TEMPLATE.format(team_id=team["team_id"])
         name = f"[{name}](<{url}>)"
 
     return name
@@ -115,33 +132,32 @@ def format_team_list(team_ids, team_map, use_link=True, include_points=False):
     return ", ".join(formatted[:-1]) + " og " + formatted[-1]
 
 
-def generate_message(old, new):
-    new_map = {team["team_id"]: team for team in new}
-    old_map = {team["team_id"]: team for team in old} if old else {}
+def generate_message(old, new, tracked_team_id):
+    new_map = {t["team_id"]: t for t in new} if new else {}
+    old_map = {t["team_id"]: t for t in old} if old else {}
 
-    if TEAM_ID not in new_map:
-        if TEAM_ID in old_map:
-            old_place = old_map[TEAM_ID]["country_place"]
-            return f"**{old_map[TEAM_ID]['team_name']} er ikke på den nye ledertavla! De lå sist på {old_place}. plass.**"
-        else:
-            return None
+    if tracked_team_id not in new_map:
+        if tracked_team_id in old_map:
+            old_place = old_map[tracked_team_id]["country_place"]
+            return (
+                f"**{old_map[tracked_team_id]['team_name']} er ikke på det nye "
+                f"leaderboardet! De lå sist på {old_place}. plass.**"
+            )
+        return None
 
-    team_name = format_team_name(new_map[TEAM_ID], USE_LINKS, INCLUDE_POINTS)
-    new_place = new_map[TEAM_ID]["country_place"]
+    team_name = format_team_name(new_map[tracked_team_id], USE_LINKS, INCLUDE_POINTS)
+    new_place = new_map[tracked_team_id]["country_place"]
 
-    if not old or TEAM_ID not in old_map:
+    if not old or tracked_team_id not in old_map:
         return f"**{team_name} ligger nå på {new_place}. plass**"
 
-    old_place = old_map[TEAM_ID]["country_place"]
+    old_place = old_map[tracked_team_id]["country_place"]
 
     passed_ids = []
     overtaken_ids = []
 
     for t_id, new_team in new_map.items():
-        if t_id == TEAM_ID:
-            continue
-
-        if t_id not in old_map:
+        if t_id == tracked_team_id or t_id not in old_map:
             continue
 
         old_t_place = old_map[t_id]["country_place"]
@@ -149,7 +165,6 @@ def generate_message(old, new):
 
         if new_t_place < new_place and old_t_place >= old_place:
             overtaken_ids.append(t_id)
-
         elif new_t_place > new_place and old_t_place <= old_place:
             passed_ids.append(t_id)
 
@@ -158,23 +173,51 @@ def generate_message(old, new):
 
     if new_place == old_place:
         if passed_ids and overtaken_ids:
-            return f"**{team_name} ligger fortsatt på {new_place}. plass. Vi tok igjen {passed_str}, men ble passert av {overtaken_str}.**"
-        else:
-            return None
+            return (
+                f"**{team_name} ligger fortsatt på {new_place}. plass. "
+                f"Vi tok igjen {passed_str}, men ble passert av {overtaken_str}.**"
+            )
+        return None
 
-    elif new_place == 1:
+    if new_place == 1:
         return f"**{team_name} er på topp igjen!**"
 
-    elif new_place < old_place:
-        return f"**{team_name} har rykket opp til {new_place}. plass! Vi har tatt igjen {passed_str}.**"
+    if new_place < old_place:
+        if passed_ids and overtaken_ids:
+            return (
+                f"**{team_name} har rykket opp til {new_place}. plass! "
+                f"Vi har tatt igjen {passed_str}, men ble også passert av {overtaken_str}.**"
+            )
+        elif passed_ids:
+            return (
+                f"**{team_name} har rykket opp til {new_place}. plass! "
+                f"Vi har tatt igjen {passed_str}.**"
+            )
+        else:
+            return (
+                f"**{team_name} har rykket opp til {new_place}. plass!**"
+            )
 
-    elif new_place > old_place:
-        return f"**{team_name} har falt til {new_place}. plass etter å ha blitt passert av {overtaken_str}.**"
+    if new_place > old_place:
+        if passed_ids and overtaken_ids:
+            return (
+                f"**{team_name} har falt til {new_place}. plass! "
+                f"Vi tok igjen {passed_str}, men ble også passert av {overtaken_str}.**"
+            )
+        elif overtaken_ids:
+            return (
+                f"**{team_name} har falt til {new_place}. plass etter å ha blitt "
+                f"passert av {overtaken_str}.**"
+            )
+        else:
+            return (
+                f"**{team_name} har falt til {new_place}. plass.**"
+            )
 
     return f"**{team_name} ligger nå på {new_place}. plass.**"
 
 
-def send_webhook(message):
+def send_webhook(message: str):
     try:
         r = requests.post(
             WEBHOOK_URL,
@@ -188,17 +231,26 @@ def send_webhook(message):
             },
         )
         r.raise_for_status()
+        print("Webhook sent successfully!")
     except requests.exceptions.RequestException as e:
         print(f"Failed to send webhook: {e}", file=sys.stderr)
-    else:
-        print("Webhook sent successfully!")
 
 
 def main():
-    old_leaderboard = load_old_leaderboard()
-    new_leaderboard = fetch_leaderboard()
+    team_info = fetch_team_info(TEAM_ID)
+    country = team_info.get("country")
+    if not country:
+        print("Team info did not contain country", file=sys.stderr)
+        sys.exit(1)
 
-    message = generate_message(old_leaderboard, new_leaderboard)
+    country = country.lower()
+    api_url = LEADERBOARD_URL_TEMPLATE.format(country=country)
+
+    old_leaderboard = load_old_leaderboard()
+    new_leaderboard = fetch_leaderboard(api_url)
+
+    message = generate_message(old_leaderboard, new_leaderboard, TEAM_ID)
+
     if message:
         send_webhook(message)
     else:
