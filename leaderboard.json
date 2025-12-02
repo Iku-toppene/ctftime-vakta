@@ -23,7 +23,7 @@
   {
     "country_place": 4,
     "team_id": 364061,
-    "points": 236.91519420855667,
+    "points": 236.9279207255974,
     "team_name": "Ekho",
     "events": 32
   },
@@ -51,7 +51,7 @@
   {
     "country_place": 8,
     "team_id": 11404,
-    "points": 107.49929309296745,
+    "points": 107.50207804724842,
     "team_name": "Itemize",
     "events": 14
   },
@@ -65,7 +65,7 @@
   {
     "country_place": 10,
     "team_id": 182472,
-    "points": 105.01944921964635,
+    "points": 105.01977618748145,
     "team_name": "RumbleInTheJungle",
     "events": 7
   },
@@ -75,12 +75,5 @@
     "points": 73.23782301932158,
     "team_name": "Corax",
     "events": 8
-  },
-  {
-    "country_place": 12,
-    "team_id": 85873,
-    "points": 57.578064709736154,
-    "team_name": "unblvr",
-    "events": 5
   }
 ]
